@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(\\(Get-Command claude -ErrorAction SilentlyContinue\\).Source; node --version; npm --version)",
+      "PowerShell(npm list -g @anthropic-ai/claude-code 2>&1)",
+      "Bash(composer install *)",
+      "Bash(ls -d /c/xampp*/php)",
+      "Bash(ls -d /c/php*)",
+      "Read(//c//**)",
+      "Bash(find /c -maxdepth 3 -name \"php.exe\")",
+      "Bash(rm -f composer.lock)",
+      "Bash(composer update *)",
+      "Bash(php artisan *)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root -e \"CREATE DATABASE IF NOT EXISTS siswater CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\")",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root siswater -e \"SHOW TABLES;\")",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root siswater -e \"SELECT id, name, email, role FROM users;\")",
+      "Bash(grep -m1 '\"version\"' vendor/laravel/framework/composer.json)",
+      "Bash(find vendor/laravel/framework -name \"server.php\")",
+      "Bash(composer reinstall *)",
+      "Bash(mkdir -p vendor/laravel/framework/src/Illuminate/Foundation/resources)",
+      "Bash(echo \"test\")",
+      "Bash(rm -f vendor/laravel/framework/src/Illuminate/Foundation/resources/testfile.txt)",
+      "Bash(/c/xampp/php/php.exe -S 127.0.0.1:8000 devserve.php)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://127.0.0.1:8000/)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://127.0.0.1:8000/login)"
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+# Dependencies (installed/built in dedicated build stages)
+/vendor
+/node_modules
+/public/build
+/public/hot
+/public/storage
+
+# Local environment & secrets (provided by the platform at runtime)
+.env
+.env.*
+auth.json
+
+# Local database & generated caches
+/database/*.sqlite
+/database/*.sqlite-journal
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+/storage/pail
+/bootstrap/cache/*.php
+
+# VCS & tooling
+.git
+.gitignore
+.github
+.idea
+.vscode
+.zed
+.fleet
+.phpunit.cache
+.phpunit.result.cache
+_ide_helper.php
+
+# Project tooling not needed in the image
+JALANKAN.bat
+tests
+README.md
