@@ -50,4 +50,10 @@ fi
 # Cache config / routes / views for performance
 php artisan optimize || true
 
+# Optional scheduler (public demo refresh). Enable with RUN_SCHEDULER=true.
+if [ "${RUN_SCHEDULER}" = "true" ]; then
+    echo "Penjadwal aktif — data demo disegarkan setiap hari pukul 01.00 WIB."
+    php artisan schedule:work >/dev/null 2>&1 &
+fi
+
 exec "$@"

@@ -1,0 +1,41 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      APP_NAME: SISWA-TER
+      APP_ENV: production
+      # Kunci demo — aman untuk uji coba lokal.
+      # Untuk deploy sungguhan, hasilkan sendiri:
+      #   php artisan key:generate --show
+      APP_KEY: base64:h8E1TtZMXAf2URnKkNhvyJFTAs1WiTLQAKWKCdwr8DM=
+      APP_DEBUG: "false"
+      APP_URL: http://localhost:8080
+      APP_LOCALE: id
+      APP_FALLBACK_LOCALE: en
+      APP_FAKER_LOCALE: id_ID
+
+      LOG_CHANNEL: stderr
+      LOG_LEVEL: warning
+
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /data/database.sqlite
+
+      SESSION_DRIVER: database
+      SESSION_SECURE_COOKIE: "false"
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+      FILESYSTEM_DISK: local
+      BROADCAST_CONNECTION: log
+      MAIL_MAILER: log
+    volumes:
+      # Basis data dan berkas unggahan bertahan antar `docker compose up`.
+      # Hapus dengan: docker compose down -v
+      - siswater-data:/data
+    restart: unless-stopped
+
+volumes:
+  siswater-data:

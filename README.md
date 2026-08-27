@@ -1,58 +1,108 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SISWA-TER — Sistem Warkah Terintegrasi
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi peminjaman warkah dan buku tanah antar seksi di Kantor Pertanahan.
+Permintaan diajukan oleh Seksi PPS, diverifikasi Tata Usaha, lalu disiapkan
+dan diunggah oleh Seksi PHPT — seluruh perpindahan status tercatat dalam log
+aktivitas sehingga posisi berkas selalu bisa ditelusuri.
 
-## About Laravel
+Prototipe. Data contoh, bukan data pertanahan sebenarnya.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Coba dalam 2 menit (Docker)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Cukup punya Docker. Tidak perlu PHP, Composer, atau Node.
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/phraffyamn/siswater.git
+cd siswater
+docker compose up --build
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Buka **http://localhost:8080**. Basis data, migrasi, dan data contoh
+disiapkan otomatis saat kontainer pertama kali hidup.
 
-## Contributing
+Menghentikan: `Ctrl+C`. Menghapus data uji dan mulai bersih:
+`docker compose down -v`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Akun demo
 
-## Code of Conduct
+Kata sandi semua akun: `password123`
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Email | Peran | Bisa melakukan |
+|---|---|---|
+| `pps@siswater.id` | Pengendalian & Penanganan Sengketa | mengajukan permintaan, menerima & mengembalikan warkah |
+| `tu@siswater.id` | Tata Usaha | menyetujui atau menolak permintaan |
+| `phpt@siswater.id` | Penetapan Hak & Pendaftaran Tanah | menyiapkan dan mengunggah berkas warkah |
+| `admin@siswater.id` | Administrator | seluruh peran di atas + kelola pengguna |
 
-## Security Vulnerabilities
+Alur paling cepat untuk dinilai: masuk sebagai **pps**, ajukan permintaan
+baru → keluar, masuk sebagai **tu**, setujui → keluar, masuk sebagai
+**phpt**, unggah berkas → kembali sebagai **pps**, unduh dan kembalikan.
+Halaman Monitoring menampilkan durasi tiap tahap dan permintaan yang
+melewati tenggat.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Menjalankan tanpa Docker
 
-## License
+Butuh PHP 8.2+, Composer, dan Node 20+.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+composer setup      # install, salin .env, buat kunci, migrasi, build aset
+php artisan db:seed # data contoh + akun demo
+php artisan serve
+```
+
+Pengguna Windows bisa langsung menjalankan `JALANKAN.bat` setelah
+`composer setup` selesai sekali.
+
+## Menerbitkan sebagai demo publik (Railway)
+
+Repositori sudah berisi `Dockerfile` dan `railway.json`.
+
+1. Buat service baru dari repositori ini — Railway membaca `railway.json`
+   dan memakai Dockerfile.
+2. Tambahkan **Volume** dengan mount path `/data`. Tanpa ini, basis data
+   dan berkas unggahan hilang setiap kali deploy ulang.
+3. Isi variabel sesuai `railway.env.example`. `APP_KEY` wajib —
+   hasilkan dengan `php artisan key:generate --show`.
+4. Opsional: setel `RUN_SCHEDULER=true` agar data demo disegarkan otomatis.
+5. Deploy. Pemeriksaan kesehatan memakai `/up`.
+
+## Menyegarkan data demo
+
+Setelah banyak dicoba orang, data contoh biasanya berantakan. Kembalikan
+ke kondisi awal kapan saja:
+
+```bash
+php artisan siswater:reset-demo
+```
+
+Lewat Docker: `docker compose exec app php artisan siswater:reset-demo --force`
+
+Untuk demo publik, penyegaran bisa berjalan otomatis tiap hari pukul
+01.00 WIB — setel variabel `RUN_SCHEDULER=true` pada layanan. Tanpa
+variabel itu penjadwal tidak dinyalakan dan reset hanya manual.
+
+## Teknologi
+
+Laravel 12 · PHP 8.3 · SQLite · Blade · Tailwind CSS 4 · Vite ·
+FrankenPHP sebagai runtime produksi.
+
+## Struktur singkat
+
+```
+app/Http/Controllers/   Auth, Dashboard, Permintaan, Monitoring, Admin
+app/Models/             User, PermintaanWarkah, PermintaanItem,
+                        WarkahFile, AktivitasLog
+database/seeders/       akun demo + 6 permintaan contoh lintas status
+docker/entrypoint.sh    migrasi, seed bila kosong, cache konfigurasi
+resources/views/        antarmuka Blade
+```
+
+## Status permintaan
+
+`menunggu_tu` → `disetujui_tu` / `ditolak_tu` → `warkah_tersedia` →
+`selesai`
+
+Setiap perpindahan menulis entri pada `aktivitas_logs` berisi waktu,
+pengguna, dan tindakan.
