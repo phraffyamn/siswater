@@ -47,6 +47,23 @@
                     value="{{ old('perihal') }}" required>
                 @error('perihal')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
+            <div class="col-md-12 mb-3">
+                <label class="form-label fw-semibold">Seksi Penyimpan Warkah <span class="text-danger">*</span></label>
+                <div class="row g-2">
+                    @foreach(['phpt' => ['Penetapan Hak & Pendaftaran Tanah', 'Buku tanah, warkah peralihan hak, berkas permohonan hak'],
+                              'sp'   => ['Survei dan Pengukuran', 'Surat ukur, gambar ukur, peta bidang tanah']] as $kode => $info)
+                    <div class="col-md-6">
+                        <input type="radio" class="btn-check" name="seksi_tujuan" id="seksi-{{ $kode }}"
+                               value="{{ $kode }}" {{ old('seksi_tujuan', 'phpt') === $kode ? 'checked' : '' }} required>
+                        <label class="btn btn-outline-primary w-100 text-start p-3" for="seksi-{{ $kode }}">
+                            <div class="fw-semibold">{{ strtoupper($kode) }} &mdash; {{ $info[0] }}</div>
+                            <div style="font-size:.76rem;opacity:.75">{{ $info[1] }}</div>
+                        </label>
+                    </div>
+                    @endforeach
+                </div>
+                @error('seksi_tujuan')<div class="text-danger" style="font-size:.82rem">{{ $message }}</div>@enderror
+            </div>
             <div class="col-md-4">
                 <label class="form-label fw-semibold">Target Selesai (Deadline)</label>
                 <input type="date" name="deadline" class="form-control @error('deadline') is-invalid @enderror"

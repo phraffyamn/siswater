@@ -10,7 +10,7 @@
     <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
         <span><i class="bi bi-folder2-open me-2"></i>
             @if(auth()->user()->isTU()) Kelola Permintaan Warkah
-            @elseif(auth()->user()->isPHPT()) Antrian Upload Warkah
+            @elseif(auth()->user()->isPetugasWarkah()) Antrian Upload Warkah {{ auth()->user()->role_singkat }}
             @else Permintaan Saya
             @endif
         </span>
@@ -113,7 +113,7 @@
                                     <i class="bi bi-clipboard-check-fill"></i>
                                 </a>
                                 @endif
-                                @if(auth()->user()->isPHPT() && in_array($p->status, ['disetujui_tu']))
+                                @if(auth()->user()->isPetugasWarkah() && $p->seksi_tujuan === auth()->user()->role && in_array($p->status, ['disetujui_tu']))
                                 <a href="{{ route('permintaan.show', $p) }}#upload-warkah" class="btn btn-sm btn-success" style="font-size:.72rem" title="Upload">
                                     <i class="bi bi-cloud-upload-fill"></i>
                                 </a>

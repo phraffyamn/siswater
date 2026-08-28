@@ -48,17 +48,25 @@ class DashboardController extends Controller
                 'total_bulan_ini'       => PermintaanWarkah::whereMonth('created_at', now()->month)->count(),
             ];
             $recentPermintaan = PermintaanWarkah::with(['pemohon'])->latest()->take(10)->get();
-        } elseif ($user->isPHPT()) {
+        } elseif ($user->isPetugasWarkah()) {
+            // PHPT dan SP memakai papan yang sama, dibatasi pada permintaan
+            // yang ditujukan ke seksi masing-masing.
+            $seksi = $user->role;
+
             $stats = [
-                'antrian_upload'        => PermintaanWarkah::where('status', 'disetujui_tu')->count(),
-                'sedang_diproses'       => PermintaanWarkah::where('status', 'diproses_phpt')
+                'antrian_upload'        => PermintaanWarkah::where('seksi_tujuan', $seksi)
+                                            ->where('status', 'disetujui_tu')->count(),
+                'sedang_diproses'       => PermintaanWarkah::where('seksi_tujuan', $seksi)
+                                            ->where('status', 'diproses_phpt')
                                             ->where('processed_by_phpt', $user->id)->count(),
                 'selesai_diupload'      => PermintaanWarkah::where('processed_by_phpt', $user->id)
                                             ->where('status', 'warkah_tersedia')->count(),
-                'total_bulan_ini'       => PermintaanWarkah::whereMonth('created_at', now()->month)
+                'total_bulan_ini'       => PermintaanWarkah::where('seksi_tujuan', $seksi)
+                                            ->whereMonth('created_at', now()->month)
                                             ->where('status', 'warkah_tersedia')->count(),
             ];
             $recentPermintaan = PermintaanWarkah::with(['pemohon'])
+                ->where('seksi_tujuan', $seksi)
                 ->whereIn('status', ['disetujui_tu', 'diproses_phpt'])
                 ->latest()->take(10)->get();
         }

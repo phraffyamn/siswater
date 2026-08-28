@@ -29,6 +29,13 @@ class User extends Authenticatable
     public function isPPS(): bool { return $this->role === 'pps'; }
     public function isPHPT(): bool { return $this->role === 'phpt'; }
     public function isTU(): bool { return $this->role === 'tu'; }
+    public function isSP(): bool { return $this->role === 'sp'; }
+
+    /** Seksi yang menyimpan dan menyiapkan warkah: PHPT dan SP. */
+    public function isPetugasWarkah(): bool
+    {
+        return in_array($this->role, ['phpt', 'sp'], true);
+    }
 
     public function getRoleLabelAttribute(): string
     {
@@ -37,6 +44,7 @@ class User extends Authenticatable
             'pps'   => 'Pengendalian & Penanganan Sengketa',
             'phpt'  => 'Penetapan Hak & Pendaftaran Tanah',
             'tu'    => 'Tata Usaha',
+            'sp'    => 'Survei dan Pengukuran',
             default => $this->role,
         };
     }
@@ -49,6 +57,18 @@ class User extends Authenticatable
     public function permintaanDiverifikasiTU()
     {
         return $this->hasMany(PermintaanWarkah::class, 'approved_by_tu');
+    }
+
+    public function getRoleSingkatAttribute(): string
+    {
+        return match($this->role) {
+            'admin' => 'ADMIN',
+            'pps'   => 'PPS',
+            'phpt'  => 'PHPT',
+            'tu'    => 'TU',
+            'sp'    => 'SP',
+            default => strtoupper($this->role),
+        };
     }
 
     public function permintaanDiprosesPhpt()

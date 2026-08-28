@@ -39,12 +39,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/permintaan/{permintaan}/approve-tu', [PermintaanController::class, 'approveTU'])->name('permintaan.approve.tu');
     });
 
-    // PHPT: upload
-    Route::middleware('role:phpt,admin')->group(function () {
+    // PHPT dan SP: upload warkah untuk permintaan yang ditujukan ke seksinya
+    Route::middleware('role:phpt,sp,admin')->group(function () {
         Route::post('/permintaan/{permintaan}/upload', [PermintaanController::class, 'uploadWarkah'])->name('permintaan.upload');
     });
 
     Route::get('/warkah/{file}/download', [PermintaanController::class, 'downloadFile'])->name('warkah.download');
+    Route::get('/warkah/{file}/preview', [PermintaanController::class, 'previewFile'])->name('warkah.preview');
 
     Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring.index');
 

@@ -136,8 +136,8 @@
                 @foreach($permintaan->files as $file)
                 <div class="col-md-6">
                     <div class="d-flex align-items-center gap-2 p-2 rounded border" style="background:#f8fafc">
-                        <div style="width:40px;height:40px;background:{{ $file->file_type==='pdf' ? '#fee2e2' : '#dbeafe' }};border-radius:8px;display:flex;align-items:center;justify-content:center;color:{{ $file->file_type==='pdf' ? '#dc2626' : '#2563eb' }};font-size:1.2rem">
-                            <i class="bi bi-file-earmark-{{ $file->file_type==='pdf' ? 'pdf' : 'zip' }}-fill"></i>
+                        <div style="width:40px;height:40px;background:{{ $file->file_type==='pdf' ? '#fee2e2' : ($file->isGambar() ? '#dcfce7' : '#dbeafe') }};border-radius:8px;display:flex;align-items:center;justify-content:center;color:{{ $file->file_type==='pdf' ? '#dc2626' : ($file->isGambar() ? '#166534' : '#2563eb') }};font-size:1.2rem">
+                            <i class="bi {{ $file->ikon }}"></i>
                         </div>
                         <div class="flex-fill" style="min-width:0">
                             <div class="text-truncate fw-semibold" style="font-size:.83rem">{{ $file->nama_file }}</div>
@@ -146,6 +146,12 @@
                                 • {{ $file->uploadedBy->name }}
                             </div>
                         </div>
+                        @if($file->bisaDipratinjau())
+                        <button type="button" class="btn btn-sm btn-outline-success" title="Pratinjau"
+                                onclick="bukaPratinjau('{{ route('warkah.preview', $file) }}', @js($file->nama_file), {{ $file->isGambar() ? 'true' : 'false' }}, '{{ route('warkah.download', $file) }}')">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        @endif
                         <a href="{{ route('warkah.download', $file) }}" class="btn btn-sm btn-outline-primary" title="Unduh">
                             <i class="bi bi-download"></i>
                         </a>
@@ -155,7 +161,7 @@
             </div>
             @if($permintaan->catatan_phpt)
             <div class="mt-2 p-2 rounded" style="background:#dcfce7;font-size:.83rem;color:#166534">
-                <i class="bi bi-chat-text-fill me-1"></i><strong>Catatan PHPT:</strong> {{ $permintaan->catatan_phpt }}
+                <i class="bi bi-chat-text-fill me-1"></i><strong>Catatan {{ $permintaan->seksi_tujuan_singkat }}:</strong> {{ $permintaan->catatan_phpt }}
             </div>
             @endif
         </div>
@@ -186,7 +192,7 @@
     @endif
 
     <!-- UPLOAD WARKAH (PHPT) -->
-    @if($user->isPHPT() && in_array($permintaan->status, ['disetujui_tu', 'diproses_phpt']))
+    @if($user->isPetugasWarkah() && $permintaan->seksi_tujuan === $user->role && in_array($permintaan->status, ['disetujui_tu', 'diproses_phpt']))
     <div class="card-siswa card mb-3" id="upload-warkah">
         <div class="card-header" style="background:#166534">
             <i class="bi bi-cloud-upload-fill me-2"></i>Upload Warkah Digital
@@ -342,10 +348,78 @@
 
 </div>
 </div>
+<!-- MODAL PRATINJAU BERKAS -->
+<div class="modal fade" id="modalPratinjau" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" style="border-radius:14px;overflow:hidden">
+            <div class="modal-header" style="background:#166534;color:#fff">
+                <h6 class="modal-title text-truncate" id="pratinjau-judul">
+                    <i class="bi bi-eye me-2"></i>Pratinjau Berkas
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body p-0" style="background:#f1f5f9;min-height:70vh">
+                <div id="pratinjau-memuat" class="d-flex flex-column align-items-center justify-content-center text-muted" style="height:70vh">
+                    <div class="spinner-border mb-2" role="status"></div>
+                    <div style="font-size:.85rem">Memuat berkas...</div>
+                </div>
+                <iframe id="pratinjau-pdf" style="display:none;width:100%;height:70vh;border:0"></iframe>
+                <div id="pratinjau-gambar-bungkus" style="display:none;height:70vh;overflow:auto;text-align:center">
+                    <img id="pratinjau-gambar" alt="Pratinjau warkah" style="max-width:100%;height:auto">
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <span class="me-auto text-muted" style="font-size:.78rem">
+                    <i class="bi bi-info-circle me-1"></i>Berkas tidak dapat diubah dari halaman ini
+                </span>
+                <a id="pratinjau-unduh" href="#" class="btn btn-sm btn-primary">
+                    <i class="bi bi-download me-1"></i>Unduh
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
+
 
 @push('scripts')
 <script>
+
+function bukaPratinjau(url, nama, gambar, urlUnduh) {
+    const modalEl  = document.getElementById('modalPratinjau');
+    const memuat   = document.getElementById('pratinjau-memuat');
+    const pdf      = document.getElementById('pratinjau-pdf');
+    const bungkus  = document.getElementById('pratinjau-gambar-bungkus');
+    const img      = document.getElementById('pratinjau-gambar');
+
+    document.getElementById('pratinjau-judul').innerHTML =
+        '<i class="bi bi-eye me-2"></i>' + nama;
+    document.getElementById('pratinjau-unduh').href = urlUnduh;
+
+    memuat.style.display  = 'flex';
+    pdf.style.display     = 'none';
+    bungkus.style.display = 'none';
+    pdf.src = '';
+    img.src = '';
+
+    if (gambar) {
+        img.onload  = () => { memuat.style.display = 'none'; bungkus.style.display = 'block'; };
+        img.onerror = () => { memuat.innerHTML = '<div class="text-danger">Berkas gagal dimuat.</div>'; };
+        img.src = url;
+    } else {
+        pdf.onload = () => { memuat.style.display = 'none'; pdf.style.display = 'block'; };
+        pdf.src = url;
+    }
+
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+
+document.getElementById('modalPratinjau').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('pratinjau-pdf').src = '';
+    document.getElementById('pratinjau-gambar').src = '';
+});
+
 function previewFiles(input) {
     const preview = document.getElementById('file-preview');
     const btn = document.getElementById('btn-upload');

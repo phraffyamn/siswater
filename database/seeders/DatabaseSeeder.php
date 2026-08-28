@@ -53,6 +53,16 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
+        $sp = User::create([
+            'name'      => 'Rizky Pratama, S.T.',
+            'email'     => 'sp@siswater.id',
+            'password'  => Hash::make('password123'),
+            'role'      => 'sp',
+            'nip'       => '199203142016031003',
+            'jabatan'   => 'Kepala Seksi Survei dan Pengukuran',
+            'is_active' => true,
+        ]);
+
         $tu = User::create([
             'name'      => 'Siti Nurhaliza, S.E.',
             'email'     => 'tu@siswater.id',
@@ -69,9 +79,13 @@ class DatabaseSeeder extends Seeder
         $this->buatPermintaan($pps1, null, null, 'menunggu_tu');
         $this->buatPermintaan($pps2, $tu, null, 'ditolak_tu');
         $this->buatPermintaan($pps2, null, null, 'menunggu_tu', now()->subDays(8));
+
+        // Permintaan yang ditujukan ke Seksi Survei dan Pengukuran.
+        $this->buatPermintaan($pps2, $tu, $sp, 'warkah_tersedia', null, 'sp');
+        $this->buatPermintaan($pps1, $tu, null, 'disetujui_tu', null, 'sp');
     }
 
-    private function buatPermintaan($pemohon, $tu, $phpt, $status, $deadline = null): void
+    private function buatPermintaan($pemohon, $tu, $petugas, $status, $deadline = null, $seksi = 'phpt'): void
     {
         $perihals = [
             'Permohonan Warkah untuk Penanganan Sengketa Batas Tanah',
@@ -79,12 +93,20 @@ class DatabaseSeeder extends Seeder
             'Peminjaman Warkah untuk Penyelesaian Sengketa Tanah Warisan',
             'Permohonan Warkah Sertipikat Hak Milik atas Nama Sengketa',
         ];
+        if ($seksi === 'sp') {
+            $perihals = [
+                'Permintaan Surat Ukur untuk Sengketa Batas Bidang',
+                'Permohonan Gambar Ukur dan Peta Bidang Tanah Bersengketa',
+            ];
+        }
         $kota = ['Bandung', 'Bogor', 'Bekasi', 'Depok', 'Tangerang', 'Surabaya'];
+
 
         $data = [
             'nomor_nota'         => PermintaanWarkah::generateNomorNota(),
             'pemohon_id'         => $pemohon->id,
             'perihal'            => $perihals[array_rand($perihals)],
+            'seksi_tujuan'       => $seksi,
             'keterangan'         => 'Dalam rangka penanganan sengketa pertanahan di ' . $kota[array_rand($kota)] . ', diperlukan dokumen warkah sebagai bahan pemeriksaan.',
             'status'             => $status,
             'tanggal_permintaan' => now()->subDays(rand(1, 15)),
@@ -96,11 +118,11 @@ class DatabaseSeeder extends Seeder
             $data['approved_at_tu'] = now()->subDays(rand(1, 5));
             $data['catatan_tu']     = $status === 'ditolak_tu'
                 ? 'Permintaan tidak memenuhi syarat administrasi.'
-                : 'Permintaan disetujui. PHPT segera memproses.';
+                : 'Permintaan disetujui. Seksi tujuan segera memproses.';
         }
 
-        if ($phpt && in_array($status, ['diproses_phpt', 'warkah_tersedia', 'dikembalikan', 'selesai'])) {
-            $data['processed_by_phpt'] = $phpt->id;
+        if ($petugas && in_array($status, ['diproses_phpt', 'warkah_tersedia', 'dikembalikan', 'selesai'])) {
+            $data['processed_by_phpt'] = $petugas->id;
             $data['processed_at_phpt'] = now()->subDays(rand(1, 3));
             $data['catatan_phpt']      = 'Warkah telah disiapkan dan diupload dalam format digital.';
         }

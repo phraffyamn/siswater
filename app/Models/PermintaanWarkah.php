@@ -11,7 +11,7 @@ class PermintaanWarkah extends Model
     protected $table = 'permintaan_warkah';
 
     protected $fillable = [
-        'nomor_nota', 'pemohon_id', 'perihal', 'keterangan', 'status',
+        'nomor_nota', 'pemohon_id', 'perihal', 'seksi_tujuan', 'keterangan', 'status',
         'tanggal_permintaan', 'deadline',
         'approved_by_tu', 'approved_at_tu', 'catatan_tu',
         'processed_by_phpt', 'processed_at_phpt', 'catatan_phpt',
@@ -66,6 +66,19 @@ class PermintaanWarkah extends Model
     {
         return $this->deadline && now()->isAfter($this->deadline)
             && !in_array($this->status, ['warkah_tersedia', 'dikembalikan', 'selesai']);
+    }
+
+    public function getSeksiTujuanLabelAttribute(): string
+    {
+        return match($this->seksi_tujuan) {
+            'sp'    => 'Survei dan Pengukuran',
+            default => 'Penetapan Hak & Pendaftaran Tanah',
+        };
+    }
+
+    public function getSeksiTujuanSingkatAttribute(): string
+    {
+        return $this->seksi_tujuan === 'sp' ? 'SP' : 'PHPT';
     }
 
     public function pemohon(): BelongsTo

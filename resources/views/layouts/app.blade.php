@@ -228,7 +228,7 @@
             <li class="nav-item">
                 <a href="{{ route('permintaan.index') }}" class="nav-link {{ request()->routeIs('permintaan.*') && !request()->routeIs('permintaan.create') ? 'active' : '' }}">
                     <i class="bi bi-folder2-open"></i>
-                    {{ auth()->user()->isTU() ? 'Kelola Permintaan' : (auth()->user()->isPHPT() ? 'Upload Warkah' : 'Permintaan Saya') }}
+                    {{ auth()->user()->isTU() ? 'Kelola Permintaan' : (auth()->user()->isPetugasWarkah() ? 'Upload Warkah' : 'Permintaan Saya') }}
                 </a>
             </li>
 

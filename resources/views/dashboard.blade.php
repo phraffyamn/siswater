@@ -73,7 +73,7 @@
         </div>
         @endforeach
 
-    @elseif($user->isPHPT())
+    @elseif($user->isPetugasWarkah())
         @foreach([
             ['label'=>'Antrian Upload','value'=>$stats['antrian_upload'],'icon'=>'bi-inbox-fill','color'=>'#b8860b','bg'=>'#fef3c7'],
             ['label'=>'Sedang Diproses','value'=>$stats['sedang_diproses'],'icon'=>'bi-arrow-repeat','color'=>'#7c3aed','bg'=>'#ede9fe'],
@@ -133,7 +133,7 @@
     </div>
     @endif
 
-    @if($user->isPHPT())
+    @if($user->isPetugasWarkah())
     <div class="col-md-4">
         <a href="{{ route('permintaan.index', ['status'=>'disetujui_tu']) }}" class="card-siswa card text-decoration-none h-100" style="border-left: 4px solid #166534 !important">
             <div class="card-body d-flex align-items-center gap-3">

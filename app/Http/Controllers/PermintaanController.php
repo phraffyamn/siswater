@@ -19,8 +19,9 @@ class PermintaanController extends Controller
 
         if ($user->isPPS()) {
             $query->where('pemohon_id', $user->id);
-        } elseif ($user->isPHPT()) {
-            $query->whereIn('status', ['disetujui_tu', 'diproses_phpt', 'warkah_tersedia']);
+        } elseif ($user->isPetugasWarkah()) {
+            $query->where('seksi_tujuan', $user->role)
+                  ->whereIn('status', ['disetujui_tu', 'diproses_phpt', 'warkah_tersedia']);
         }
 
         if ($request->filled('status')) {
@@ -48,6 +49,7 @@ class PermintaanController extends Controller
     {
         $request->validate([
             'perihal'       => 'required|string|max:255',
+            'seksi_tujuan'  => 'required|in:phpt,sp',
             'keterangan'    => 'nullable|string',
             'deadline'      => 'nullable|date|after:today',
             'nama_warkah'   => 'required|array|min:1',
@@ -58,6 +60,7 @@ class PermintaanController extends Controller
             'nomor_nota'         => PermintaanWarkah::generateNomorNota(),
             'pemohon_id'         => Auth::id(),
             'perihal'            => $request->perihal,
+            'seksi_tujuan'       => $request->seksi_tujuan,
             'keterangan'         => $request->keterangan,
             'deadline'           => $request->deadline,
             'status'             => 'menunggu_tu',
@@ -132,9 +135,14 @@ class PermintaanController extends Controller
     {
         $request->validate([
             'files'   => 'required|array|min:1',
-            'files.*' => 'required|file|mimes:pdf,zip|max:51200',
+            'files.*' => 'required|file|mimes:pdf,zip,jpg,jpeg,png|max:51200',
             'catatan' => 'nullable|string|max:1000',
         ]);
+
+        // Seksi hanya boleh mengunggah untuk permintaan yang ditujukan padanya.
+        if (Auth::user()->isPetugasWarkah() && $permintaan->seksi_tujuan !== Auth::user()->role) {
+            abort(403, 'Permintaan ini ditujukan ke seksi ' . $permintaan->seksi_tujuan_singkat . '.');
+        }
 
         if ($permintaan->status === 'disetujui_tu') {
             $permintaan->update([
@@ -164,7 +172,8 @@ class PermintaanController extends Controller
         AktivitasLog::create([
             'permintaan_id'  => $permintaan->id,
             'user_id'        => Auth::id(),
-            'aksi'           => 'Warkah digital diupload oleh PHPT (' . count($request->file('files')) . ' file)',
+            'aksi'           => 'Warkah digital diupload oleh ' . $permintaan->seksi_tujuan_singkat
+                                . ' (' . count($request->file('files')) . ' file)',
             'catatan'        => $request->catatan,
             'status_sebelum' => 'disetujui_tu',
             'status_sesudah' => 'warkah_tersedia',
@@ -203,5 +212,28 @@ class PermintaanController extends Controller
     public function downloadFile(WarkahFile $file)
     {
         return Storage::disk('public')->download($file->file_path, $file->nama_file);
+    }
+
+    /**
+     * Menampilkan berkas di dalam peramban tanpa mengunduh.
+     * Hanya untuk jenis yang memang bisa dirender; ZIP tetap diarahkan ke unduhan.
+     */
+    public function previewFile(WarkahFile $file)
+    {
+        if (! $file->bisaDipratinjau()) {
+            return redirect()->route('warkah.download', $file);
+        }
+
+        if (! Storage::disk('public')->exists($file->file_path)) {
+            abort(404, 'Berkas tidak ditemukan.');
+        }
+
+        return response()->file(
+            Storage::disk('public')->path($file->file_path),
+            [
+                'Content-Type'        => $file->mime_type,
+                'Content-Disposition' => 'inline; filename="' . $file->nama_file . '"',
+            ]
+        );
     }
 }

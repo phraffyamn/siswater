@@ -50,7 +50,7 @@
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Role / Seksi <span class="text-danger">*</span></label>
                     <select name="role" class="form-select @error('role') is-invalid @enderror" required>
-                        @foreach(['admin'=>'Administrator','pps'=>'Pengendalian & Penanganan Sengketa (PPS)','phpt'=>'Penetapan Hak & Pendaftaran Tanah (PHPT)','tu'=>'Tata Usaha (TU)'] as $val => $lbl)
+                        @foreach(['admin'=>'Administrator','pps'=>'Pengendalian & Penanganan Sengketa (PPS)','phpt'=>'Penetapan Hak & Pendaftaran Tanah (PHPT)','tu'=>'Tata Usaha (TU)','sp'=>'Survei dan Pengukuran (SP)'] as $val => $lbl)
                         <option value="{{ $val }}" {{ old('role', $user?->role) === $val ? 'selected' : '' }}>{{ $lbl }}</option>
                         @endforeach
                     </select>

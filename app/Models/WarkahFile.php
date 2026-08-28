@@ -22,6 +22,37 @@ class WarkahFile extends Model
         return $bytes . ' B';
     }
 
+    public function bisaDipratinjau(): bool
+    {
+        return in_array(strtolower($this->file_type), ['pdf', 'jpg', 'jpeg', 'png'], true);
+    }
+
+    public function getMimeTypeAttribute(): string
+    {
+        return match (strtolower($this->file_type)) {
+            'pdf'         => 'application/pdf',
+            'png'         => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
+            default       => 'application/octet-stream',
+        };
+    }
+
+    /** Berkas gambar dirender dengan <img>, PDF dengan <iframe>. */
+    public function isGambar(): bool
+    {
+        return in_array(strtolower($this->file_type), ['jpg', 'jpeg', 'png'], true);
+    }
+
+    public function getIkonAttribute(): string
+    {
+        return match (strtolower($this->file_type)) {
+            'pdf'         => 'bi-file-earmark-pdf-fill',
+            'zip'         => 'bi-file-earmark-zip-fill',
+            'jpg', 'jpeg', 'png' => 'bi-file-earmark-image-fill',
+            default       => 'bi-file-earmark-fill',
+        };
+    }
+
     public function permintaan(): BelongsTo
     {
         return $this->belongsTo(PermintaanWarkah::class, 'permintaan_id');
